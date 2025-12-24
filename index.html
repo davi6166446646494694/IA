@@ -2,12 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>IA Completa</title>
-
+<title>Detector de Chat</title>
 <style>
-body { background:#0e0e0e; font-family:Arial; color:#fff; }
-.chat { width:520px; margin:40px auto; background:#1a1a1a; padding:20px; border-radius:10px; }
-#msgs { height:380px; overflow-y:auto; }
+body { background:#0e0e0e; color:#fff; font-family:Arial; }
+.chat { width:500px; margin:40px auto; background:#1a1a1a; padding:20px; border-radius:10px; }
+#msgs { height:350px; overflow-y:auto; }
 .user { color:#00ff88; margin:6px 0; }
 .ia { color:#00aaff; margin:6px 0 12px; }
 input { width:100%; padding:12px; border:none; border-radius:6px; }
@@ -17,49 +16,29 @@ input { width:100%; padding:12px; border:none; border-radius:6px; }
 <body>
 
 <div class="chat">
-  <h2>🤖 IA COMPLETA</h2>
-  <div id="msgs"></div>
-  <input
-    id="msg"
-    placeholder="Digite e aperte ENTER"
-    onkeydown="if(event.key==='Enter') enviar()"
-  >
+<h2>🕵️ Detector de Chat</h2>
+<div id="msgs"></div>
+<input id="msg" placeholder="Digite e ENTER"
+ onkeydown="if(event.key==='Enter') enviar()">
 </div>
 
-<!-- 🔽 O SCRIPT VAI AQUI 🔽 -->
 <script>
-const usuario = "usuario_padrao";
+const ws = new WebSocket("ws://127.0.0.1:8000/ws");
+const msgs = document.getElementById("msgs");
 
-async function enviar(){
+ws.onmessage = (event) => {
+  msgs.innerHTML += `<div class="ia">IA: ${event.data}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+};
+
+function enviar(){
   const input = document.getElementById("msg");
   const texto = input.value.trim();
   if(!texto) return;
 
-  const msgs = document.getElementById("msgs");
   msgs.innerHTML += `<div class="user">Você: ${texto}</div>`;
+  ws.send(texto);
   input.value = "";
-
-  try {
-    const res = await fetch("http://127.0.0.1:8000/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        usuario: usuario,
-        mensagem: texto
-      })
-    });
-
-    if(!res.ok) {
-      throw new Error("Erro HTTP " + res.status);
-    }
-
-    const data = await res.json();
-    msgs.innerHTML += `<div class="ia">IA: ${data.resposta}</div>`;
-  } catch (err) {
-    msgs.innerHTML += `<div class="ia">❌ ERRO: ${err.message}</div>`;
-  }
-
-  msgs.scrollTop = msgs.scrollHeight;
 }
 </script>
 
