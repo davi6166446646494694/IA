@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Farm</title>
+
+<style>
+body {
+  background:#0f0f0f;
+  color:#fff;
+  font-family:Arial;
+}
+
+.container {
+  width:400px;
+  margin:50px auto;
+  background:#1c1c1c;
+  padding:20px;
+  border-radius:10px;
+}
+
+input, textarea, button {
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:5px;
+}
+
+button {
+  background:#00ff88;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.hidden {
+  display:none;
+}
+
+h2 {
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔹 TELA 1 -->
+<div class="container" id="tela1">
+  <h2>Inserir dados da conta</h2>
+
+  <input id="nome" placeholder="NOME DA CONTA">
+  <input id="rebite" placeholder="REBITE ATUALMENTE">
+  <input id="valor" placeholder="VALOR DO PAGAMENTO">
+  <input id="numero" placeholder="NÚMERO">
+
+  <button onclick="confirmar()">CONFIRMAR</button>
+</div>
+
+<!-- 🔹 TELA 2 -->
+<div class="container hidden" id="tela2">
+  <h2>Entrando em área secundária</h2>
+
+  <p><b>Nome da conta:</b> <span id="v_nome"></span></p>
+  <p><b>Rebite atualmente:</b> <span id="v_rebite"></span></p>
+  <p><b>Valor do pagamento:</b> <span id="v_valor"></span></p>
+  <p><b>Número:</b> <span id="v_numero"></span></p>
+
+  <h3>Bloco de nota / Informação</h3>
+  <textarea id="nota" placeholder="Digite informações aqui..."></textarea>
+
+  <button onclick="finalizar()">FINALIZAR CONTA</button>
+</div>
+
+<script>
+function confirmar() {
+  const nome = document.getElementById("nome").value;
+  const rebite = document.getElementById("rebite").value;
+  const valor = document.getElementById("valor").value;
+  const numero = document.getElementById("numero").value;
+
+  if(!nome || !rebite || !valor || !numero){
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  document.getElementById("v_nome").innerText = nome;
+  document.getElementById("v_rebite").innerText = rebite;
+  document.getElementById("v_valor").innerText = valor;
+  document.getElementById("v_numero").innerText = numero;
+
+  document.getElementById("tela1").classList.add("hidden");
+  document.getElementById("tela2").classList.remove("hidden");
+}
+
+function finalizar() {
+  const numeroDestino = "81985622987";
+  const nota = document.getElementById("nota").value;
+
+  const mensagem = encodeURIComponent(
+    "Conta finalizada.\n\nInformações:\n" + nota
+  );
+
+  window.location.href = `https://wa.me/${numeroDestino}?text=${mensagem}`;
+}
+</script>
+
+</body>
+</html>
