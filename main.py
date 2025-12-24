@@ -1,64 +1,67 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import json
-import os
+import json, os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-app = FastAPI()
+app = FastAPI(title="IA Completa")
 
-ARQ_MEMORIA = "memoria.json"
+PASTA_MEMORIA = "memoria"
+os.makedirs(PASTA_MEMORIA, exist_ok=True)
 
-# Base de conhecimento inicial
-base_conhecimento = [
-    "Meu nome é IA.",
-    "Sou uma inteligência artificial.",
-    "Posso conversar com você.",
-    "Tenho memória das mensagens.",
-    "Fui criada em Python.",
-    "Respondo perguntas gerais."
+BASE_CONHECIMENTO = [
+    "Sou uma inteligência artificial criada para conversar.",
+    "Tenho memória e consigo aprender.",
+    "Posso lembrar do que você me ensina.",
+    "Analiso o significado das perguntas.",
+    "Respondo usando contexto."
 ]
 
-# Carregar memória
-if os.path.exists(ARQ_MEMORIA):
-    with open(ARQ_MEMORIA, "r", encoding="utf-8") as f:
-        memoria = json.load(f)
-else:
-    memoria = []
-
 class Entrada(BaseModel):
+    usuario: str
     mensagem: str
 
-def salvar_memoria():
-    with open(ARQ_MEMORIA, "w", encoding="utf-8") as f:
+def carregar_memoria(usuario):
+    caminho = f"{PASTA_MEMORIA}/{usuario}.json"
+    if os.path.exists(caminho):
+        with open(caminho, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+def salvar_memoria(usuario, memoria):
+    with open(f"{PASTA_MEMORIA}/{usuario}.json", "w", encoding="utf-8") as f:
         json.dump(memoria, f, indent=2, ensure_ascii=False)
 
-def pensar(pergunta):
-    textos = base_conhecimento + [m["mensagem"] for m in memoria]
+def pensar(mensagem, memoria):
+    textos = BASE_CONHECIMENTO + [m["mensagem"] for m in memoria]
     vectorizer = TfidfVectorizer()
-    X = vectorizer.fit_transform(textos + [pergunta])
-
+    X = vectorizer.fit_transform(textos + [mensagem])
     similaridades = cosine_similarity(X[-1], X[:-1])
     melhor = similaridades.argmax()
     score = similaridades[0][melhor]
 
-    if score > 0.25:
+    if score > 0.30:
         return textos[melhor]
     else:
-        return "Ainda não sei responder isso, mas posso aprender com o tempo."
+        return "Não tenho certeza ainda, mas posso aprender se você me explicar."
 
 @app.post("/chat")
 def chat(dados: Entrada):
-    resposta = pensar(dados.mensagem)
+    memoria = carregar_memoria(dados.usuario)
+    resposta = pensar(dados.mensagem, memoria)
+
+    # aprendizado simples
+    if resposta.startswith("Não tenho certeza"):
+        BASE_CONHECIMENTO.append(dados.mensagem)
 
     memoria.append({
         "mensagem": dados.mensagem,
         "resposta": resposta
     })
 
-    salvar_memoria()
+    salvar_memoria(dados.usuario, memoria)
 
     return {
         "resposta": resposta,
-        "memoria": len(memoria)
+        "mensagens_memorizadas": len(memoria)
     }
