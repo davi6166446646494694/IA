@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Minha IA</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chat {
+      width: 400px;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    #messages {
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: #00ff88;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .user { color: #00ff88; }
+    .ia { color: #00aaff; }
+  </style>
+</head>
+<body>
+
+<div class="chat">
+  <h2>🤖 Minha IA</h2>
+  <div id="messages"></div>
+  <input id="input" placeholder="Pergunte qualquer coisa..." />
+  <button onclick="enviar()">Enviar</button>
+</div>
+
+<script>
+async function enviar() {
+  const input = document.getElementById("input");
+  const messages = document.getElementById("messages");
+  const pergunta = input.value;
+  if (!pergunta) return;
+
+  messages.innerHTML += `<div class="user">Você: ${pergunta}</div>`;
+  input.value = "";
+
+  const res = await fetch("http://127.0.0.1:8000/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pergunta })
+  });
+
+  const data = await res.json();
+
+  messages.innerHTML += `<div class="ia">IA: ${data.resposta}</div>`;
+  messages.scrollTop = messages.scrollHeight;
+}
+</script>
+
+</body>
+</html>
