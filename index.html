@@ -2,43 +2,85 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>IA Pensante</title>
+<title>IA com Memória</title>
+
 <style>
-body { background:#111; color:#fff; font-family:Arial; }
-.chat { width:500px; margin:50px auto; background:#222; padding:20px; border-radius:10px; }
-#msgs { height:300px; overflow-y:auto; }
-.user { color:#0f0; }
-.ia { color:#0af; }
-input, button { width:100%; padding:10px; margin-top:10px; }
+body {
+  background: #0f0f0f;
+  color: #fff;
+  font-family: Arial;
+}
+
+.chat {
+  width: 500px;
+  margin: 40px auto;
+  background: #1c1c1c;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+#msgs {
+  height: 350px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.user {
+  color: #00ff88;
+  margin-bottom: 5px;
+}
+
+.ia {
+  color: #00aaff;
+  margin-bottom: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  outline: none;
+}
 </style>
+
 </head>
 <body>
 
 <div class="chat">
-<h2>🤖 IA com Memória</h2>
-<div id="msgs"></div>
-<input id="msg" placeholder="Pergunte qualquer coisa..." />
-<button onclick="enviar()">Enviar</button>
+  <h2>🤖 IA Pensante</h2>
+  <div id="msgs"></div>
+  <input
+    id="msg"
+    placeholder="Digite e aperte ENTER..."
+    onkeydown="if(event.key==='Enter') enviar()"
+  />
 </div>
 
 <script>
-async function enviar(){
-  const msg = document.getElementById("msg").value;
-  if(!msg) return;
+async function enviar() {
+  const input = document.getElementById("msg");
+  const texto = input.value.trim();
+  if (!texto) return;
 
   const msgs = document.getElementById("msgs");
-  msgs.innerHTML += `<div class="user">Você: ${msg}</div>`;
-  document.getElementById("msg").value = "";
+  msgs.innerHTML += `<div class="user">Você: ${texto}</div>`;
+  input.value = "";
 
-  const res = await fetch("http://127.0.0.1:8000/chat",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ mensagem: msg })
-  });
+  try {
+    const res = await fetch("http://127.0.0.1:8000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mensagem: texto })
+    });
 
-  const data = await res.json();
-  msgs.innerHTML += `<div class="ia">IA: ${data.resposta}</div>`;
-  msgs.scrollTop = msgs.scrollHeight;
+    const data = await res.json();
+    msgs.innerHTML += `<div class="ia">IA: ${data.resposta}</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+
+  } catch (e) {
+    msgs.innerHTML += `<div class="ia">Erro ao conectar com a IA.</div>`;
+  }
 }
 </script>
 
