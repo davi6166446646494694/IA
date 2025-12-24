@@ -1,0 +1,11 @@
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"msg": "Servidor funcionando"}
+
+@app.get("/ola")
+def ola():
+    return {"msg": "Olá, eu respondo"}
