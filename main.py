@@ -7,47 +7,45 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 app = FastAPI()
 
-MEMORIA_ARQ = "memoria.json"
+ARQ_MEMORIA = "memoria.json"
 
-# Base de conhecimento
+# Base de conhecimento inicial
 base_conhecimento = [
-    "Meu nome é IA Pensante.",
-    "Posso responder perguntas gerais.",
-    "Tenho memória da conversa.",
-    "Aprendo com o contexto da conversa.",
+    "Meu nome é IA.",
+    "Sou uma inteligência artificial.",
+    "Posso conversar com você.",
+    "Tenho memória das mensagens.",
     "Fui criada em Python.",
-    "Posso conversar sobre vários assuntos."
+    "Respondo perguntas gerais."
 ]
 
 # Carregar memória
-if os.path.exists(MEMORIA_ARQ):
-    with open(MEMORIA_ARQ, "r") as f:
+if os.path.exists(ARQ_MEMORIA):
+    with open(ARQ_MEMORIA, "r", encoding="utf-8") as f:
         memoria = json.load(f)
 else:
     memoria = []
-
-vectorizer = TfidfVectorizer()
-vectorizer.fit(base_conhecimento)
 
 class Entrada(BaseModel):
     mensagem: str
 
 def salvar_memoria():
-    with open(MEMORIA_ARQ, "w") as f:
-        json.dump(memoria, f, indent=2)
+    with open(ARQ_MEMORIA, "w", encoding="utf-8") as f:
+        json.dump(memoria, f, indent=2, ensure_ascii=False)
 
 def pensar(pergunta):
     textos = base_conhecimento + [m["mensagem"] for m in memoria]
+    vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(textos + [pergunta])
-    similaridades = cosine_similarity(X[-1], X[:-1])
 
+    similaridades = cosine_similarity(X[-1], X[:-1])
     melhor = similaridades.argmax()
     score = similaridades[0][melhor]
 
-    if score > 0.2:
+    if score > 0.25:
         return textos[melhor]
     else:
-        return "Não tenho certeza, mas posso aprender se continuarmos conversando."
+        return "Ainda não sei responder isso, mas posso aprender com o tempo."
 
 @app.post("/chat")
 def chat(dados: Entrada):
@@ -62,5 +60,5 @@ def chat(dados: Entrada):
 
     return {
         "resposta": resposta,
-        "memoria_total": len(memoria)
+        "memoria": len(memoria)
     }
